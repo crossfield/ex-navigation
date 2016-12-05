@@ -736,7 +736,7 @@ class ExNavigationStack extends PureComponent<any, Props, State> {
     }
 
     if (routeConfig.sceneStyle) {
-      style = [...style, routeConfig.sceneStyle || styles.defaultSceneStyle];
+      style = StyleSheet.flatten(...style, styles.defaultSceneStyle, routeConfig.sceneStyle);
     }
 
     return (
