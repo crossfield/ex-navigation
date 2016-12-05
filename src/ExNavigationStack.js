@@ -86,6 +86,7 @@ type Context = {
 
 type ExNavigationSceneRendererProps = {
   route: ExNavigationRoute,
+  defaultSceneStyle: StyleSheet,
 } & NavigationSceneRendererProps;
 
 type TransitionOptions = {
@@ -299,6 +300,7 @@ class ExNavigationStack extends PureComponent<any, Props, State> {
 
   render() {
     const navigationState: ?Object = this.props.navigationState;
+    const defaultSceneStyle = StyleSheet.flatten(this.props.defaultSceneStyle, styles.defaultSceneStyle);
 
     if (!navigationState) {
       return null;
@@ -308,7 +310,7 @@ class ExNavigationStack extends PureComponent<any, Props, State> {
       <NavigationTransitioner
         style={styles.container}
         navigationState={navigationState}
-        render={this._renderTransitioner}
+        render={this._renderTransitioner.bind(this, this.props.defaultSceneStyle)}
         configureTransition={this._configureTransition}
         onTransitionStart={this._onTransitionStart}
         onTransitionEnd={this._onTransitionEnd}
@@ -437,20 +439,23 @@ class ExNavigationStack extends PureComponent<any, Props, State> {
     this._getNavigatorContext().pop();
   };
 
-  _renderTransitioner = (props) => {
+  _renderTransitioner = (defaultStyle, props) => {
     const header = this._renderHeader({
       ...props,
+      style: defaultStyle,
       scene: props.scene,
     });
 
     const alertBar = this._renderAlertBar({
       ...props,
+      style: defaultStyle,
       scene: props.scene,
     });
 
     const scenes = props.scenes.map(
       scene => this._renderScene({
         ...props,
+        style: defaultStyle,
         scene,
       })
     );
@@ -675,7 +680,6 @@ class ExNavigationStack extends PureComponent<any, Props, State> {
     const { sceneAnimations, gestures } = latestRouteConfig.styles || {};
 
     props = { ...props, latestRouteConfig, latestRoute };
-
     const scene: any = props.scene;
     const routeForScene = scene.route;
 
@@ -736,7 +740,7 @@ class ExNavigationStack extends PureComponent<any, Props, State> {
     }
 
     if (routeConfig.sceneStyle) {
-      style = StyleSheet.flatten(...style, styles.defaultSceneStyle, routeConfig.sceneStyle);
+      style = StyleSheet.flatten(...style, routeConfig.sceneStyle, styles.defaultSceneStyle);
     }
 
     return (
