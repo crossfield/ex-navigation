@@ -300,7 +300,7 @@ class ExNavigationStack extends PureComponent<any, Props, State> {
 
   render() {
     const navigationState: ?Object = this.props.navigationState;
-    const defaultSceneStyle = StyleSheet.flatten(this.props.defaultSceneStyle, styles.defaultSceneStyle);
+    const defaultSceneStyle = StyleSheet.flatten([this.props.defaultSceneStyle, styles.defaultSceneStyle]);
 
     if (!navigationState) {
       return null;
