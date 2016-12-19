@@ -90,7 +90,7 @@ function customForHorizontal(props: NavigationSceneRendererProps): Object {
 
   const opacity = position.interpolate({
     inputRange,
-    outputRange: ([1, 1, 0.3]: Array<number>),
+    outputRange: ([1, 1, 0]: Array<number>),
   });
 
   const translateY = 0;
