@@ -7,11 +7,12 @@ import {
   UIManager,
   findNodeHandle,
 } from 'react-native';
+import invariant from 'invariant';
 
 import type { TransitionProps, Metrics } from './ExNavigationSharedElementReducer';
 
 type Props = {
-  children: () => React.Element<*>,
+  children?: () => React.Element<*>,
   id: string,
 
   // This is not part of the public API and is used by the overlay to pass down
@@ -43,6 +44,7 @@ export default class SharedElement extends Component {
       );
     }
 
+    invariant(childFn, 'Must pass a function as a child to `SharedElement`.');
     const childEl = childFn(animationStyle);
 
     return cloneElement(childEl, {
@@ -104,9 +106,9 @@ export default class SharedElement extends Component {
         return;
       }
 
-      UIManager.measureInWindow(
+      UIManager.measure(
         findNodeHandle(this._el),
-        (x, y, width, height) => {
+        (origX, origY, width, height, x, y) => {
           const store = this.context.sharedElementStore;
           store.dispatch({
             type: 'UPDATE_METRICS_FOR_ELEMENT',

@@ -49,7 +49,6 @@ export default class ExNavigationStackItem extends PureComponent {
       ...props,
     } = this.props;
 
-
     if (sceneAnimations === undefined) {
       // fall back to default style.
       sceneAnimations = NavigationStyles.SlideHorizontal.sceneAnimations(this.props);
