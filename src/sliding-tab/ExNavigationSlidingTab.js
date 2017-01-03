@@ -6,7 +6,6 @@ import React, {
   Children,
 } from 'react';
 import {
-  Platform,
   StyleSheet,
   View,
 } from 'react-native';
@@ -21,14 +20,10 @@ import ExNavigatorContext from '../ExNavigatorContext';
 import ExNavigationBar from '../ExNavigationBar';
 import ExNavigationSlidingTabItem from './ExNavigationSlidingTabItem';
 import { ExNavigationTabContext } from '../tab/ExNavigationTab';
-import { TabViewAnimated, TabViewPagerAndroid, TabViewPagerScroll, TabBarTop, TabBar } from 'react-native-tab-view';
+import { TabViewAnimated, TabViewPagerPan, TabBarTop, TabBar } from 'react-native-tab-view';
 import { createNavigatorComponent } from '../ExNavigationComponents';
 
 import type ExNavigationContext from '../ExNavigationContext';
-
-const TabViewPagerComponent = Platform.OS === 'ios' ?
-  TabViewPagerScroll :
-  TabViewPagerAndroid;
 
 // TODO: Fill this in
 type SlidingTabItem = {
@@ -54,12 +49,10 @@ type Props = {
   renderHeader?: (props: any) => ?React.Element<any>,
   renderFooter?: (props: any) => ?React.Element<any>,
   renderLabel?: (routeParams: any) => ?React.Element<any>,
-  getRenderLabel?: (props: any) => (routeParams: any) => ?React.Element<any>,
   style?: any,
   swipeEnabled?: boolean,
   tabBarStyle?: any,
   tabStyle?: any,
-  labelStyle?: any,
 };
 
 type State = {
@@ -198,7 +191,7 @@ class ExNavigationSlidingTab extends PureComponent<any, Props, State> {
 
   _renderPager = (props) => {
     return (
-      <TabViewPagerComponent
+      <TabViewPagerPan
         {...props}
         swipeEnabled={this.props.swipeEnabled}
       />
@@ -216,16 +209,11 @@ class ExNavigationSlidingTab extends PureComponent<any, Props, State> {
 
   _renderTabBar = (props) => {
     const TabBarComponent = this.props.position === 'top' ? TabBarTop : TabBar;
-    const renderLabelFn = this.props.getRenderLabel ?
-      this.props.getRenderLabel(props) :
-      this.props.renderLabel;
-
     const tabBarProps = {
       pressColor: this.props.pressColor,
       indicatorStyle: this.props.indicatorStyle,
       tabStyle: this.props.tabStyle,
-      labelStyle: this.props.labelStyle,
-      renderLabel: renderLabelFn,
+      renderLabel: this.props.renderLabel,
       style: [{backgroundColor: this.props.barBackgroundColor}, this.props.tabBarStyle],
     };
 

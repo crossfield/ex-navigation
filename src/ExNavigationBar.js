@@ -38,7 +38,7 @@ class ExNavigationBarTitle extends PureComponent {
 
     return (
       <View style={[titleStyles.title, style]}>
-        <Text numberOfLines={1} style={[
+        <Text style={[
           titleStyles.titleText,
           tintColor ? {color: tintColor} : null,
           textStyle,
@@ -249,8 +249,7 @@ export default class ExNavigationBar extends PureComponent {
       <View pointerEvents={this.props.visible ? 'auto' : 'none'} style={wrapperStyle}>
         {isTranslucent && (
           <Components.BlurView
-            tint={translucentTint}
-            intensity={100}
+            tintEffect={translucentTint}
             style={[styles.translucentUnderlay, {height}]}
           />
         )}

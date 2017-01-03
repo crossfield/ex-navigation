@@ -26,6 +26,7 @@ import { createNavigatorComponent } from './ExNavigationComponents';
 import ExNavigatorContext from './ExNavigatorContext';
 import ExNavigationAlertBar from './ExNavigationAlertBar';
 import * as NavigationStyles from './ExNavigationStyles';
+import * as Utils from './ExNavigationUtils';
 import SharedElementGroup from './shared-element/ExNavigationSharedElementGroup';
 
 const {
@@ -67,7 +68,6 @@ type Props = {
   onUnregisterNavigatorContext: (navigatorUID: string) => void,
   onTransitionStart: ?TransitionFn,
   onTransitionEnd: ?TransitionFn,
-  renderScene?: (props: StackNavigationSceneRendererProps) => ?React.Element<{}>,
 };
 
 type State = {
@@ -86,11 +86,8 @@ type Context = {
 
 type ExNavigationSceneRendererProps = {
   route: ExNavigationRoute,
+  defaultSceneStyle: StyleSheet,
 } & NavigationSceneRendererProps;
-
-type StackNavigationSceneRendererProps = ExNavigationSceneRendererProps & {
-  style?: any,
-};
 
 type TransitionOptions = {
   transitionGroup?: string,
@@ -297,10 +294,13 @@ class ExNavigationStack extends PureComponent<any, Props, State> {
 
     this._routeListeners = {};
     this._useAnimation = true;
+
+    this._log = Utils.createLogger('StackNavigation:' + this.state.navigatorUID);
   }
 
   render() {
     const navigationState: ?Object = this.props.navigationState;
+    const defaultSceneStyle = StyleSheet.flatten([this.props.defaultSceneStyle, styles.defaultSceneStyle]);
 
     if (!navigationState) {
       return null;
@@ -310,7 +310,7 @@ class ExNavigationStack extends PureComponent<any, Props, State> {
       <NavigationTransitioner
         style={styles.container}
         navigationState={navigationState}
-        render={this._renderTransitioner}
+        render={this._renderTransitioner.bind(this, this.props.defaultSceneStyle)}
         configureTransition={this._configureTransition}
         onTransitionStart={this._onTransitionStart}
         onTransitionEnd={this._onTransitionEnd}
@@ -439,20 +439,23 @@ class ExNavigationStack extends PureComponent<any, Props, State> {
     this._getNavigatorContext().pop();
   };
 
-  _renderTransitioner = (props) => {
+  _renderTransitioner = (defaultStyle, props) => {
     const header = this._renderHeader({
       ...props,
+      style: defaultStyle,
       scene: props.scene,
     });
 
     const alertBar = this._renderAlertBar({
       ...props,
+      style: defaultStyle,
       scene: props.scene,
     });
 
     const scenes = props.scenes.map(
       scene => this._renderScene({
         ...props,
+        style: defaultStyle,
         scene,
       })
     );
@@ -471,13 +474,9 @@ class ExNavigationStack extends PureComponent<any, Props, State> {
   _getNavigationBarHeight(latestRouteConfig) {
     let height = NavigationBar.DEFAULT_HEIGHT;
 
-    if (latestRouteConfig.navigationBar && latestRouteConfig.navigationBar.height) {
-      height = latestRouteConfig.navigationBar.height + DEFAULT_STATUSBAR_HEIGHT;
-    }
-
     if (latestRouteConfig.statusBar && latestRouteConfig.statusBar.translucent) {
       height = NavigationBar.DEFAULT_HEIGHT_WITHOUT_STATUS_BAR + DEFAULT_STATUSBAR_HEIGHT;
-    }
+    };
 
     return height;
   }
@@ -680,27 +679,20 @@ class ExNavigationStack extends PureComponent<any, Props, State> {
     const latestRouteConfig = latestRoute.config;
     const { sceneAnimations, gestures } = latestRouteConfig.styles || {};
 
+    props = { ...props, latestRouteConfig, latestRoute };
     const scene: any = props.scene;
     const routeForScene = scene.route;
 
-    props = {
-      ...props,
-      latestRouteConfig,
-      latestRoute,
-      onNavigateBack: this._onNavigateBack,
-      key: props.scene.key,
-      route: routeForScene,
-      sceneAnimations,
-      gestures,
-      renderScene: this._renderRoute,
-    };
-
-    if (typeof this.props.renderScene === 'function') {
-      return this.props.renderScene(props);
-    }
-
     return (
-      <NavigationItem {...props} />
+      <NavigationItem
+        {...props}
+        onNavigateBack={this._onNavigateBack}
+        key={props.scene.key}
+        route={routeForScene}
+        sceneAnimations={sceneAnimations}
+        gestures={gestures}
+        renderScene={this._renderRoute}
+      />
     );
   };
 
@@ -748,7 +740,7 @@ class ExNavigationStack extends PureComponent<any, Props, State> {
     }
 
     if (routeConfig.sceneStyle) {
-      style = [...style, routeConfig.sceneStyle || styles.defaultSceneStyle];
+      style = StyleSheet.flatten(...style, routeConfig.sceneStyle, styles.defaultSceneStyle);
     }
 
     return (
